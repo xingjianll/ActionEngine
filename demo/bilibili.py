@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 import random
-import time
 from typing import Annotated
 
-from bilibili_api import Credential, search
+from bilibili_api import Credential, search, comment, video
+from bilibili_api.comment import CommentResourceType, OrderType
 from cohere import Client
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict
@@ -28,7 +28,7 @@ class Base(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     credential: Credential
     co: Client
-    prompt: str = "You are a dude browsing Bilibili, A Chinese video sharing platform."
+    prompt: str = "You are browsing Bilibili, A Chinese video sharing platform."
     memory: Fifo
 
 
@@ -47,7 +47,11 @@ engine = Engine(
 @engine.action()
 async def browse_videos(
     base: Base,
-) -> Annotated[str | Id, Tag("video_id", cascade=True)]:
+) -> tuple[
+    Annotated[str | Id, Tag("video_id", cascade=True)],
+    Annotated[str | Id, Tag("video_title")],
+    Annotated[str | Id, Tag("video_description")]
+]:
     prompt = I(
         f"""
         {base.prompt}
@@ -80,29 +84,58 @@ async def browse_videos(
     )
     response = base.co.chat(temperature=1, message=prompt).text
     if response == "-1":
-        return Id()
+        return Id(), Id(), Id()
     video = res["result"][int(response)]
     base.memory.add(f"finds {video['title']} while browsing videos")
-    return video["bvid"]
+    return video["bvid"], video["title"], video["description"]
 
 
 @engine.action()
 async def read_comments(
-    base: Base, video_id: Annotated[str, Deps(["comment_id"])]
+    base:              Base,
+    video_id:          Annotated[str, Deps(["comment_id"])],
+    video_title:       str,
+    video_description: str
 ) -> Annotated[str, Tag("comment_id")]:
-    time.sleep(1)
+    c = await comment.get_comments(
+            oid=video.Video(bvid=video_id).get_aid(),
+            type_=CommentResourceType.VIDEO,
+            order=OrderType.LIKE,
+            credential=base.credential,
+        )
+    top_10 = []
+    for i in range(min(5, c["page"]["count"])):
+        cmt = c["replies"][i]
+        top_10.append(f"{i + 1} {cmt['member']['uname']}: {cmt['content']['message']}")
+    top_10_str = "\n".join(top_10)
+
+    prompt = I(
+        f"""
+        {base.prompt}
+        You are browsing a video called {video_title}, the description is {video_description}. 
+        Here are 10 comments: {top_10_str}, return the number that represents the comment you want to reply most. 
+        Give a number and nothing else.
+        """
+    )
+    response = base.co.chat(temperature=1, message=prompt).text
+    cmt = c["replies"][int(response)]
+    base.memory.add(
+        f"finds comment: {cmt['content']['message']} while browsing {video_title}"
+    )
+
     print("read_comments")
     return "comment_id1"
 
 
 @engine.action()
-async def post_comment(base: Base, comment_id: str) -> None:
-    time.sleep(1)
+async def post_comment(base: Base, video_id: str) -> None:
     print("post_comment")
     return
 
+@engine.action()
+async def reply_to_comment(base: Base, comment_id: str) -> None:
+    print("post_comment")
+    return
 
 if __name__ == "__main__":
-    engine.run(base_state=Base(height=10, width=10))
-    x = soemthing()
-    x
+    ...
