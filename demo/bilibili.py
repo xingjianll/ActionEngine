@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import os
 import random
+import time
 from typing import Annotated
 
-from bilibili_api import Credential, search, comment, video
+from bilibili_api import Credential, search, comment, dynamic, video
 from bilibili_api.comment import CommentResourceType, OrderType
+from bilibili_api.dynamic import BuildDynamic
+from bilibili_api.video import Video
 from cohere import Client
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict
@@ -35,6 +38,7 @@ class Base(BaseModel):
 def action_selector(actions: list[Action]) -> Action:
     print([action.name for action in actions])
     rand = random.randint(0, len(actions) - 1)
+    time.sleep(10)
     return actions[rand]
 
 
@@ -47,11 +51,8 @@ engine = Engine(
 @engine.action()
 async def browse_videos(
     base: Base,
-) -> tuple[
-    Annotated[str | Id, Tag("video_id", cascade=True)],
-    Annotated[str | Id, Tag("video_title")],
-    Annotated[str | Id, Tag("video_description")]
-]:
+) -> Annotated[Video | Id, Tag("vid", cascade=True)]:
+    print("browse videos")
     prompt = I(
         f"""
         {base.prompt}
@@ -70,8 +71,8 @@ async def browse_videos(
 
     top_10 = []
     for i in range(10):
-        video = res["result"][i]
-        top_10.append(f"{i + 1} {video['title']}, {video['play']} plays")
+        vid = res["result"][i]
+        top_10.append(f"{i + 1} {vid['title']}, {vid['play']} plays")
     top_10_str = "\n".join(top_10)
 
     prompt = I(
@@ -84,27 +85,27 @@ async def browse_videos(
     )
     response = base.co.chat(temperature=1, message=prompt).text
     if response == "-1":
-        return Id(), Id(), Id()
-    video = res["result"][int(response)]
-    base.memory.add(f"finds {video['title']} while browsing videos")
-    return video["bvid"], video["title"], video["description"]
+        return Id()
+    vid = res["result"][int(response)]
+    base.memory.add(f"finds {(await Video(bvid=vid['bvid']).get_info()).get('title')} while browsing videos")
+    return Video(bvid=vid['bvid'])
 
 
 @engine.action()
 async def read_comments(
-    base:              Base,
-    video_id:          Annotated[str, Deps(["comment_id"])],
-    video_title:       str,
-    video_description: str
+    base:  Base,
+    vid: Annotated[Video, Deps(["comment_id"])],
 ) -> Annotated[str, Tag("comment_id")]:
+    print("read_comments")
+
     c = await comment.get_comments(
-            oid=video.Video(bvid=video_id).get_aid(),
-            type_=CommentResourceType.VIDEO,
-            order=OrderType.LIKE,
-            credential=base.credential,
-        )
+        oid=vid.get_aid(),
+        type_=CommentResourceType.VIDEO,
+        order=OrderType.LIKE,
+        credential=base.credential,
+    )
     top_10 = []
-    for i in range(min(5, c["page"]["count"])):
+    for i in range(min(c["page"]["count"], 10)):
         cmt = c["replies"][i]
         top_10.append(f"{i + 1} {cmt['member']['uname']}: {cmt['content']['message']}")
     top_10_str = "\n".join(top_10)
@@ -112,7 +113,7 @@ async def read_comments(
     prompt = I(
         f"""
         {base.prompt}
-        You are browsing a video called {video_title}, the description is {video_description}. 
+        You are browsing a video {(await vid.get_info()).get('title')}. 
         Here are 10 comments: {top_10_str}, return the number that represents the comment you want to reply most. 
         Give a number and nothing else.
         """
@@ -120,22 +121,46 @@ async def read_comments(
     response = base.co.chat(temperature=1, message=prompt).text
     cmt = c["replies"][int(response)]
     base.memory.add(
-        f"finds comment: {cmt['content']['message']} while browsing {video_title}"
+        f"finds comment: {cmt['content']['message']} while browsing {(await vid.get_info()).get('title')}"
     )
-
-    print("read_comments")
     return "comment_id1"
 
 
 @engine.action()
-async def post_comment(base: Base, video_id: str) -> None:
+async def post_comment(base: Base, vid: Video) -> None:
     print("post_comment")
-    return
+    prompt = I(
+        f"""
+        {base.prompt}
+        You are browsing a video {(await vid.get_info()).get('title')}.
+        Here is the video's tags {await vid.get_tags()}.
+        Here is the video's script {await vid.get_ai_conclusion(page_index=0)}.
+        Return your comment to this video in Chinese.
+        """
+    )
+    response = base.co.chat(temperature=1, message=prompt).text
+    footnote = (
+        f"\n I am a bot, and this action was performed automatically. Please contact {os.getenv("name")}"
+        f" if you have any questions or concerns."
+    )
+    await comment.send_comment(
+        text=f"{response} {footnote}",
+        oid=vid.get_aid(),
+        type_=CommentResourceType.VIDEO,
+        credential=base.credential,
+    )
+    base.memory.add(f"commented {response} to {(await vid.get_info()).get('title')}")
+    d = BuildDynamic.empty().add_text(
+        f"reply to https://www.bilibili.com/video/{vid.get_bvid()} \n"
+        + f"{response} {footnote}"
+    )
+    await dynamic.send_dynamic(d, credential=base.credential)
 
-@engine.action()
-async def reply_to_comment(base: Base, comment_id: str) -> None:
-    print("post_comment")
-    return
 
 if __name__ == "__main__":
-    ...
+    memory = Fifo()
+    co = Client(os.environ.get("COHERE_API_KEY"))
+    credential = Credential(sessdata=SESSDATA, bili_jct=BILI_JCT, buvid3=BUVID3)
+    base = Base(credential=credential, co=co, memory=memory)
+
+    engine.run(base)
