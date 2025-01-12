@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import Generator
 from inspect import iscoroutinefunction
+from types import NoneType
 from typing import Callable, Any, get_type_hints, get_origin, get_args
 
 from action_engine.param import (
@@ -82,7 +83,7 @@ class Action[**I, O]:
             yield OutputParam(
                 name=metadata.name, type_=base_type, cascade=metadata.cascade
             )
-        elif return_type is None:  # Handle void
+        elif return_type is NoneType:  # Handle void
             pass
         else:  # Handle multiple
             origin = get_origin(return_type)
