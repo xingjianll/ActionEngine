@@ -2,10 +2,14 @@
     <h4>Light-weight, fully-typed tool call orchestration framework for agentic workflows.</h4>
 </div>
 
-Install with pip:
-```shell
-  pip install action-engine
-```
+[//]: # ()
+[//]: # (Install with pip:)
+
+[//]: # (```shell)
+
+[//]: # (  pip install action-engine)
+
+[//]: # (```)
 
 ## Features
 - **Global State Management**: Engine manages the global state, ensuring only the right variables are passed to the tools when calling
