@@ -5,6 +5,7 @@ import random
 import time
 from typing import Annotated
 
+import requests
 from bilibili_api import Credential, search, comment, dynamic, video
 from bilibili_api.comment import CommentResourceType, OrderType
 from bilibili_api.dynamic import BuildDynamic
@@ -38,7 +39,7 @@ class Base(BaseModel):
 def action_selector(actions: list[Action]) -> Action:
     print([action.name for action in actions])
     rand = random.randint(0, len(actions) - 1)
-    time.sleep(10)
+    time.sleep(5)
     return actions[rand]
 
 
@@ -88,7 +89,7 @@ async def browse_videos(
         return Id()
     vid = res["result"][int(response)]
     base.memory.add(f"finds {(await Video(bvid=vid['bvid']).get_info()).get('title')} while browsing videos")
-    return Video(bvid=vid['bvid'])
+    return Video(bvid=vid['bvid'], credential=base.credential)
 
 
 @engine.action()
@@ -129,18 +130,30 @@ async def read_comments(
 @engine.action()
 async def post_comment(base: Base, vid: Video) -> None:
     print("post_comment")
+
+    cid = await vid.get_cid(0)
+    subtitles = (await vid.get_subtitle(cid))["subtitles"]
+    concatenated_subtitle = ''
+    if len(subtitles) > 0:
+        subtitle_url = subtitles[0].get("subtitle_url")
+        if subtitle_url is not None and subtitle_url != "":
+            res = requests.get(url="https://" + subtitle_url[2:]).json()
+            concatenated_subtitle = "".join(item["content"] for item in res["body"])
+
     prompt = I(
         f"""
         {base.prompt}
         You are browsing a video {(await vid.get_info()).get('title')}.
         Here is the video's tags {await vid.get_tags()}.
-        Here is the video's script {await vid.get_ai_conclusion(page_index=0)}.
+        Here is the video's summary {(await vid.get_ai_conclusion(page_index=0))}.
+        Here is the video's script {concatenated_subtitle}.
         Return your comment to this video in Chinese.
         """
     )
+
     response = base.co.chat(temperature=1, message=prompt).text
     footnote = (
-        f"\n I am a bot, and this action was performed automatically. Please contact {os.getenv("name")}"
+        f"\n I am a bot, and this action was performed automatically. Please contact {os.environ.get('name', '')}"
         f" if you have any questions or concerns."
     )
     await comment.send_comment(
