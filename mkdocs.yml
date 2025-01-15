@@ -1,1 +1,4 @@
-site_name: My Docs
+site_name: Action Engine
+site_url: https://xingjianll.github.io/actionengine
+theme:
+  name: material
