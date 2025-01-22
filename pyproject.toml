@@ -6,15 +6,23 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "bilibili-api-python>=16.3.0",
-    "cohere>=5.13.5",
+    "fastapi>=0.115.6",
     "pydantic>=2.10.4",
     "python-dotenv>=1.0.1",
+    "uvicorn>=0.34.0",
+    "websockets>=14.2",
 ]
 
 [dependency-groups]
 dev = [
-    "mkdocs-material>=9.5.49",
+    "pymdown-extensions>=10.14",
+    "mkdocs-material==9.5.50",
     "mypy>=1.14.0",
     "pytest>=8.3.4",
     "ruff>=0.8.4",
+]
+
+demo = [
+    "cohere>=5.13.5",
+    "pygithub>=2.5.0",
 ]

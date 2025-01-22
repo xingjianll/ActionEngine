@@ -6,4 +6,4 @@ BUVID3=
 COHERE_API_KEY=
 ```
 
-Use [this tutorial](https://nemo2011.github.io/bilibili-api/#/get-credential) for the first three variables
+Use [this tutorial](https://nemo2011.github.io/bilibili-api/#/get-credential) for the first three env variables

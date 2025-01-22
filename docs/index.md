@@ -1,17 +1,29 @@
-# Welcome to MkDocs
+# ActionEngine Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+ActionEngine is a tool-call orchestration framework for agentic workflows. Specifically, it is designed for agents that interact with a set of complex, interdependent API endpoints.(1)
+{ .annotate }
 
-## Commands
+1.  Wrapper libraries for popular websites such as [PyGithub](https://github.com/PyGithub/PyGithub), [python-youtube](https://github.com/sns-sdks/python-youtube) etc. are examples of such sets of API endpoints.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## Key Features
+* **Easy to use** - Minimalistic interfaces inspired by FastAPI and Typer
+* **Type Safety** - Designed to be fully compatible with type checkers such as mypy
+* **Zero LLM wrapper** - Pick your favorite LLM package such as `openai` `liteLLM` `aisuite` and use it directly with ActionEngine
 
-## Project layout
+## Installation
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+=== "uv"
+
+    ```shell
+    uv add action-engine
+    ```
+
+=== "pip"
+
+    ```shell
+    pip install action-engine
+    ```
+
+## Example: Github Summary Bot
+    
+```python
