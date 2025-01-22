@@ -2,14 +2,3 @@ site_name: Action Engine
 site_url: https://xingjianll.github.io/actionengine
 theme:
   name: material
-  features:
-    - content.tooltips
-
-markdown_extensions:
-  - abbr
-  - attr_list
-  - def_list
-
-
-plugins:
-  - info
