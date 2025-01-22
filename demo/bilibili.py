@@ -6,7 +6,7 @@ import time
 from typing import Annotated
 
 import requests
-from bilibili_api import Credential, search, comment, dynamic, video
+from bilibili_api import Credential, search, comment, dynamic
 from bilibili_api.comment import CommentResourceType, OrderType
 from bilibili_api.dynamic import BuildDynamic
 from bilibili_api.video import Video
