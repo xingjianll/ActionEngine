@@ -66,6 +66,7 @@ class Engine[BaseState]:
         ]
 
     def _update(self, param: OutputParam, val: Any) -> None:
+        """Update the state with the given parameter and value."""
         if isinstance(val, Id):
             pass
         if isinstance(val, Rm):
@@ -80,10 +81,12 @@ class Engine[BaseState]:
                 self._cascade(param.name)
 
     def _cascade(self, name: str) -> None:
+        """Deletes all parameters that depend on the given parameter name recursively."""
         for action in self.actions.values():
             if deps := action.input_params.get(name):
                 for dep in deps.deps:
                     self._params.discard(dep)
+                    self._cascade(dep)
 
     def action[**P, O](
         self, terminal: bool = False, description: str = ""
