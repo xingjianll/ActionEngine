@@ -14,6 +14,7 @@ class DummyState(BaseModel):
     """
     A simple base state model used in engine tests.
     """
+
     counter: int = 0
     finished: bool = False
 
@@ -25,11 +26,13 @@ def dummy_engine() -> Engine[DummyState]:
     The custom action selector chooses the 'finish' action if available;
     otherwise, it selects the first action.
     """
+
     def action_selector(actions: List[Action]) -> Action:
         for act in actions:
             if act.name == "finish":
                 return act
         return actions[0]
+
     return Engine(DummyState, action_selector)
 
 
@@ -70,7 +73,9 @@ def test_engine_cascade() -> None:
     engine._params.set_state(Param(name="dependent", type_=int), 100)
 
     # Create a dummy input parameter "trigger" whose metadata indicates it depends on "dependent".
-    dummy_input_param: InputParam = InputParam(name="trigger", type_=int, deps=["dependent"])
+    dummy_input_param: InputParam = InputParam(
+        name="trigger", type_=int, deps=["dependent"]
+    )
     dummy_param_set: ParamSet[InputParam] = ParamSet([dummy_input_param])
 
     # Create a dummy action with these input parameters.

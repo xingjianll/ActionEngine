@@ -137,13 +137,13 @@ class Action[**I, O](Displayable):
             ret1.append("None\n")
 
         for p in self.input_params:
-            ret1.append(str(p)+"\n")
+            ret1.append(str(p) + "\n")
 
         ret2 = []
         if not self._output_params:
             ret2.append("None\n")
         for p2 in self.output_params:
-            ret2.append(str(p2)+"\n")
+            ret2.append(str(p2) + "\n")
         return ["".join(ret1), "".join(ret2)]
 
     def invoke(self, state: StatefulParamSet) -> list[tuple[OutputParam, Any]]:

@@ -16,7 +16,10 @@ class Param(BaseModel):
         if isinstance(self.type_, type):
             return f"{self.name}: {self.type_.__name__}"
         else:
-            return f"{self.name}: {"｜".join([x.__name__ for x in get_args(self.type_)])}"
+            return (
+                f"{self.name}: {"｜".join([x.__name__ for x in get_args(self.type_)])}"
+            )
+
 
 class InputParam(Param):
     deps: list[str]

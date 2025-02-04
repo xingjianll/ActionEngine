@@ -8,6 +8,7 @@ class Graph[N: Displayable, E]:
 
     nodes: dict[N, list[N]]
     edges: dict[tuple[N, N], E]
+
     def __init__(self) -> None:
         self.nodes = {}
         self.edges = {}
@@ -69,10 +70,14 @@ class Graph[N: Displayable, E]:
 
         # Add edges with labels (if any)
         for node, neighbors in self.nodes.items():
-            mermaid.append(f"{node.get_name()}({node.get_name()} \n +++++++++++++ \n {"+++++++++++++\n".join(node.get_info())})")
+            mermaid.append(
+                f"{node.get_name()}({node.get_name()} \n +++++++++++++ \n {"+++++++++++++\n".join(node.get_info())})"
+            )
 
         for coordinate, e in self.edges.items():
-            mermaid.append(f"{coordinate[0].get_name()} -- {e} --> {coordinate[1].get_name()}")
+            mermaid.append(
+                f"{coordinate[0].get_name()} -- {e} --> {coordinate[1].get_name()}"
+            )
 
         return "\n".join(mermaid)
 

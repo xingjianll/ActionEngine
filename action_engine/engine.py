@@ -73,9 +73,7 @@ class Engine[BaseState]:
         if val is None:
             pass
         else:
-            self._params.set_state(
-                Param(name=param.name, type_=param.type_), val
-            )
+            self._params.set_state(Param(name=param.name, type_=param.type_), val)
             if param.cascade:
                 self._cascade(param.name)
 
@@ -110,8 +108,8 @@ class Engine[BaseState]:
                     if p.name in action.input_params:
                         self.dag.add_edge(a, action, p.name)
             return action
-        return wrapper
 
+        return wrapper
 
     def display(self) -> str:
         graphbytes = self.dag.display_mermaid().encode("utf-8")

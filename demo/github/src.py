@@ -5,4 +5,3 @@ g = Github(auth=auth)
 
 
 rs = g.search_repositories("")
-for r in rs:

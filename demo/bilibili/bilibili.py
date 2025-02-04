@@ -41,6 +41,7 @@ class TargetComment(BaseModel):
     user_name: str
     content: str
 
+
 def action_selector(actions: list[Action]) -> Action:
     print([action.name for action in actions])
     rand = random.randint(0, len(actions) - 1)
@@ -93,13 +94,15 @@ async def browse_videos(
     if response == "-1":
         return None
     vid = res["result"][int(response)]
-    base.memory.add(f"finds {(await Video(bvid=vid['bvid']).get_info()).get('title')} while browsing videos")
-    return Video(bvid=vid['bvid'], credential=base.credential)
+    base.memory.add(
+        f"finds {(await Video(bvid=vid['bvid']).get_info()).get('title')} while browsing videos"
+    )
+    return Video(bvid=vid["bvid"], credential=base.credential)
 
 
 @engine.action()
 async def read_comments(
-    base:  Base,
+    base: Base,
     vid: Annotated[Video, Deps(["cmt"])],
 ) -> Annotated[TargetComment, Tag("cmt")]:
     print("read_comments")
@@ -135,10 +138,10 @@ async def read_comments(
             oid=vid.get_aid(),
             type_=CommentResourceType.VIDEO,
             rpid=cmt["rpid"],
-            credential=base.credential
+            credential=base.credential,
         ),
         user_name=cmt["member"]["uname"],
-        content=cmt["content"]["message"]
+        content=cmt["content"]["message"],
     )
 
 
@@ -148,7 +151,7 @@ async def post_comment(base: Base, vid: Video) -> None:
 
     cid = await vid.get_cid(0)
     subtitles = (await vid.get_subtitle(cid))["subtitles"]
-    concatenated_subtitle = ''
+    concatenated_subtitle = ""
     if len(subtitles) > 0:
         subtitle_url = subtitles[0].get("subtitle_url")
         if subtitle_url is not None and subtitle_url != "":
@@ -184,6 +187,7 @@ async def post_comment(base: Base, vid: Video) -> None:
     )
     await dynamic.send_dynamic(d, credential=base.credential)
 
+
 @engine.action()
 async def reply_to_comment(base: Base, cmt: TargetComment, vid: Video) -> None:
     print("reply_to_comment")
@@ -214,6 +218,7 @@ async def reply_to_comment(base: Base, cmt: TargetComment, vid: Video) -> None:
         + f"{response} {footnote}"
     )
     await dynamic.send_dynamic(d, credential=base.credential)
+
 
 if __name__ == "__main__":
     memory = Fifo()
