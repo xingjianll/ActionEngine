@@ -126,7 +126,7 @@ class Action[**I, O](Displayable):
         return self._fn(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self._name}"
+        return self._name
 
     def get_name(self) -> str:
         return self._name

@@ -12,12 +12,12 @@ class Engine[BaseState]:
     _params: StatefulParamSet
     actions: dict[str, Action]
     base_state_type: type[BaseState]
-    base_action_selector: Callable[[list[Action]], Action]
+    base_action_selector: Callable[[BaseState, list[Action]], Action]
 
     def __init__(
         self,
         base_state_type: type[BaseState],
-        base_action_selector: Callable[[list[Action]], Action],
+        base_action_selector: Callable[[BaseState, list[Action]], Action],
     ):
         self._params = StatefulParamSet([])
         self.actions = {}
@@ -54,7 +54,7 @@ class Engine[BaseState]:
 
         while True:
             possible_actions = self._filter_actions()
-            action = self.base_action_selector(possible_actions)
+            action = self.base_action_selector(self._params.get_state('base') ,possible_actions)
             output_params = action.invoke(self._params)
             for param3, val in output_params:
                 self._update(param3, val)

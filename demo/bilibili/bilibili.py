@@ -42,7 +42,7 @@ class TargetComment(BaseModel):
     content: str
 
 
-def action_selector(actions: list[Action]) -> Action:
+def action_selector(base: Base, actions: list[Action]) -> Action:
     print([action.name for action in actions])
     rand = random.randint(0, len(actions) - 1)
     time.sleep(5)
