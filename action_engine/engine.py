@@ -6,7 +6,6 @@ from typing import Callable, Concatenate, Any
 from action_engine.action import Action
 from action_engine.graph import Graph
 from action_engine.param import StatefulParamSet, Param, OutputParam
-from action_engine.types import Id, Rm
 
 
 class Engine[BaseState]:
@@ -71,12 +70,8 @@ class Engine[BaseState]:
 
     def _update(self, param: OutputParam, val: Any) -> None:
         """Update the state with the given parameter and value."""
-        if isinstance(val, Id):
+        if val is None:
             pass
-        if isinstance(val, Rm):
-            self._params.discard(param.name)
-            if param.cascade:
-                self._cascade(param.name)
         else:
             self._params.set_state(
                 Param(name=param.name, type_=param.type_), val
