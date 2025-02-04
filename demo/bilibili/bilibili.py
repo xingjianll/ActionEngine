@@ -20,7 +20,7 @@ from action_engine.param_functions import Tag, Deps
 from inspect import cleandoc as I
 
 from action_engine.types import Id
-from demo.memory import Fifo
+from demo.bilibili.memory import Fifo
 
 load_dotenv()
 SESSDATA = os.getenv("SESSDATA")
