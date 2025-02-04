@@ -128,6 +128,9 @@ class Action[**I, O](Displayable):
     def __str__(self) -> str:
         return self._name
 
+    def __repr__(self) -> str:
+        return self._name
+
     def get_name(self) -> str:
         return self._name
 
