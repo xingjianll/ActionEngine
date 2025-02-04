@@ -7,9 +7,7 @@ from github import Github, Auth
 from github.Repository import Repository
 from pydantic import BaseModel, ConfigDict
 
-from action_engine.action import Action
-from action_engine.engine import Engine
-from action_engine.param_functions import Tag
+from action_engine import Action, Engine, Tag
 from action_engine.utils import indexed_str
 
 load_dotenv()

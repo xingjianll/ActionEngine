@@ -14,9 +14,7 @@ from cohere import Client
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict
 
-from action_engine.action import Action
-from action_engine.engine import Engine
-from action_engine.param_functions import Tag, Deps
+from action_engine import Action, Engine, Tag, Deps
 from inspect import cleandoc as I
 
 from demo.bilibili.memory import Fifo
