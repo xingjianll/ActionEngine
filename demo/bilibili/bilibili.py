@@ -175,5 +175,5 @@ if __name__ == "__main__":
     co = Client(os.environ.get("COHERE_API_KEY"))
     credential = Credential(sessdata=SESSDATA, bili_jct=BILI_JCT, buvid3=BUVID3)
     base = Base(credential=credential, co=co, memory=memory)
-
+    print(engine.display())
     engine.run(base)

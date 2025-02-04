@@ -1,7 +1,10 @@
 from __future__ import annotations
+
+import base64
 from typing import Callable, Concatenate, Any
 
 from action_engine.action import Action
+from action_engine.graph import Graph
 from action_engine.param import StatefulParamSet, Param, OutputParam
 from action_engine.types import Id, Rm
 
@@ -21,6 +24,7 @@ class Engine[BaseState]:
         self.actions = {}
         self.base_state_type = base_state_type
         self.base_action_selector = base_action_selector
+        self.dag = Graph[Action, str]()
 
     def run[**P, O](
         self,
@@ -98,6 +102,24 @@ class Engine[BaseState]:
         ) -> Action[Concatenate[BaseState, P], O]:
             action = Action(fn=fn, final=terminal, description=description)
             self.actions[action.name] = action
-            return action
 
+            # update existing nodes in dag
+            for n, a in self.actions.items():
+                for p in action.output_params:
+                    if p.name in a.input_params:
+                        self.dag.add_edge(action, a, p.name)
+
+            # add new node to dag
+            for n, a in self.actions.items():
+                for p in a.output_params:
+                    if p.name in action.input_params:
+                        self.dag.add_edge(a, action, p.name)
+            return action
         return wrapper
+
+
+    def display(self) -> str:
+        graphbytes = self.dag.display_mermaid().encode("utf-8")
+        base64_bytes = base64.urlsafe_b64encode(graphbytes)
+        base64_string = base64_bytes.decode("ascii")
+        return "https://mermaid.ink/img/" + base64_string

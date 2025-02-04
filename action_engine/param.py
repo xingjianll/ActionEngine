@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from types import UnionType
-from typing import Any, override
+from typing import Any, override, get_args
 
 from pydantic import BaseModel, ConfigDict
 
@@ -12,6 +12,11 @@ class Param(BaseModel):
     name: str
     type_: type | UnionType
 
+    def __str__(self) -> str:
+        if isinstance(self.type_, type):
+            return f"{self.name}: {self.type_.__name__}"
+        else:
+            return f"{self.name}: {"｜".join([x.__name__ for x in get_args(self.type_)])}"
 
 class InputParam(Param):
     deps: list[str]
@@ -35,11 +40,11 @@ class ParamSet[T: Param]:
             self._params[param.name] = param
 
     def __contains__(self, name: str) -> bool:
-        """v is in A if for all f such that f(v), f(A)"""
+        """v is in N if for all f such that f(v), f(N)"""
         return name in self._params
 
     def __le__(self, other: ParamSet) -> bool:
-        """A <= B if for all function f that take Param set A as input, f also takes B as input."""
+        """N <= E if for all function f that take Param set N as input, f also takes E as input."""
         if not self._params.keys() <= other.params.keys():
             return False
         return all(

@@ -11,9 +11,10 @@ from action_engine.param import (
     InputParam,
 )
 from action_engine.param_functions import TagMetaData, DepsMetaData
+from action_engine.types import Displayable
 
 
-class Action[**I, O]:
+class Action[**I, O](Displayable):
     _fn: Callable
     _name: str
     _final: bool
@@ -52,6 +53,10 @@ class Action[**I, O]:
     @property
     def input_params(self) -> ParamSet[InputParam]:
         return self._input_params
+
+    @property
+    def output_params(self) -> ParamSet[OutputParam]:
+        return self._output_params
 
     @staticmethod
     def _extract_input_params(fn: Callable[I, O]) -> Generator[InputParam, None, None]:
@@ -119,6 +124,27 @@ class Action[**I, O]:
 
     def __call__(self, *args: I.args, **kwargs: I.kwargs) -> O:
         return self._fn(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self._name}"
+
+    def get_name(self) -> str:
+        return self._name
+
+    def get_info(self) -> list[str]:
+        ret1 = []
+        if not self.input_params:
+            ret1.append("None\n")
+
+        for p in self.input_params:
+            ret1.append(str(p)+"\n")
+
+        ret2 = []
+        if not self._output_params:
+            ret2.append("None\n")
+        for p2 in self.output_params:
+            ret2.append(str(p2)+"\n")
+        return ["".join(ret1), "".join(ret2)]
 
     def invoke(self, state: StatefulParamSet) -> list[tuple[OutputParam, Any]]:
         try:
