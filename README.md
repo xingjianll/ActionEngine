@@ -64,13 +64,14 @@ Only two things are required to use Action Engine:
 
 ### Example: Github Issue Summary Bot
 ```python
-# imports omitted for brevity
+import cohere
+# other imports omitted for brevity
 
 class Base(BaseModel):
     g: Github
     model_config = ConfigDict(arbitrary_types_allowed=True)
     history: list[str]
-    llm: Client
+    llm: cohere.Client
     summary: str = ""
 
 def action_selector(base: Base, actions: list[Action]) -> Action:
