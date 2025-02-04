@@ -11,7 +11,10 @@ Install with pip:
 
 ```
 
-## Features
+## Key Features
+* **Easy to use** - Minimalistic interfaces inspired by FastAPI and Typer
+* **Type Safety** - Designed to be fully compatible with type checkers such as mypy
+* **Zero LLM wrapper** - Pick your favorite LLM package such as `openai` `liteLLM` `aisuite` and use it directly with ActionEngine
 - **State Management**: Engine manages the global state, ensuring only the right variables are passed to the actions when calling
 - **Tool Filtering**: Tools that are not compatible with the current state are automatically filtered out
 
@@ -51,7 +54,7 @@ comment.send_comment(
 )
 ```
 
-ActionEngine is designed to handle such complex, interdependent APIs for agentic workflows. It does this by 1. automatically **filter out actions** that are not compatible with the current state 2. automatically fills in the arguments when the next action is chosen.    
+ActionEngine is designed to handle such complex, interdependent APIs for agentic workflows. It does this by 1. automatically **filter out actions** that are not compatible with the current state 2. automatically **fills the input arguments** when the next action is chosen.    
 
 Only two things are required to use Action Engine:
 1. A selector that selects the agent's next action
