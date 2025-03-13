@@ -1,6 +1,6 @@
 [project]
 name = "action-engine"
-version = "0.1.1"
+version = "0.1.2"
 description = "Light-weight, fully-typed tool call orchestration framework for agentic workflows."
 readme = "README.md"
 requires-python = ">=3.12"
